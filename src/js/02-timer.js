@@ -27,9 +27,7 @@ const options = {
 
 const fp = flatpickr('#datetime-picker', options);
 
-startBtn.addEventListener('click', () => {
-  console.log(convertMs(fp.difference));
-});
+startBtn.addEventListener('click', setInterval(outputTimeLeft(convertMs(fp.difference)), 1000));
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -38,14 +36,22 @@ function convertMs(ms) {
   const hour = minute * 60;
   const day = hour * 24;
 
-  // Remaining days
-  const days = Math.floor(ms / day);
-  // Remaining hours
-  const hours = Math.floor((ms % day) / hour);
-  // Remaining minutes
-  const minutes = Math.floor(((ms % day) % hour) / minute);
-  // Remaining seconds
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+  const days = Math.floor(ms / day); // Remaining days
+  const hours = Math.floor((ms % day) / hour); // Remaining hours
+  const minutes = Math.floor(((ms % day) % hour) / minute); // Remaining minutes
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second); // Remaining seconds
 
   return { days, hours, minutes, seconds };
+}
+
+function outputTimeLeft({ days, hours, minutes, seconds }) {
+  document.querySelector('span[data-days]').textContent = addLeadingZero(days);
+  document.querySelector('span[data-hours]').textContent = addLeadingZero(hours);
+  document.querySelector('span[data-minutes]').textContent = addLeadingZero(minutes);
+  document.querySelector('span[data-seconds]').textContent = addLeadingZero(seconds);
+}
+
+function addLeadingZero(value) {
+  //return value.padStart(2, '0');
+  return value < 10 ? '0' + value : value;
 }
