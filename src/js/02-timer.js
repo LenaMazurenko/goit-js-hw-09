@@ -2,32 +2,42 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
 const startBtn = document.querySelector('button[data-start]');
+let selectedDate = 0;
+
 startBtn.disabled = true;
 
 const options = {
   enableTime: true,
   time_24hr: true,
-  difference: 0,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onChange(selectedDates) {
+  onClose(selectedDates) {
     const currentDate = new Date();
     if (selectedDates && selectedDates[0] - currentDate > 0) {
+      selectedDate = selectedDates[0].getTime();
       startBtn.disabled = false;
     } else {
       startBtn.disabled = true;
       alert('Please choose a date in the future');
     }
   },
-  onClose(selectedDates) {
-    const currentDate = new Date();
-    this.difference = selectedDates[0] - currentDate;
-  },
 };
 
 const fp = flatpickr('#datetime-picker', options);
 
-startBtn.addEventListener('click', setInterval(outputTimeLeft(convertMs(fp.difference)), 1000));
+startBtn.addEventListener('click', () => {
+  setInterval(() => {
+    const currentDate = Date.now();
+    const deltaDates = selectedDate - currentDate;
+    const param = convertMs(deltaDates);
+    outputTimeLeft(param);
+  }, 1000);
+});
+
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
+  //return value < 10 ? '0' + value : value;
+}
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -36,22 +46,17 @@ function convertMs(ms) {
   const hour = minute * 60;
   const day = hour * 24;
 
-  const days = Math.floor(ms / day); // Remaining days
-  const hours = Math.floor((ms % day) / hour); // Remaining hours
-  const minutes = Math.floor(((ms % day) % hour) / minute); // Remaining minutes
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second); // Remaining seconds
+  const days = addLeadingZero(Math.floor(ms / day)); // Remaining days
+  const hours = addLeadingZero(Math.floor((ms % day) / hour)); // Remaining hours
+  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute)); // Remaining minutes
+  const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second)); // Remaining seconds
 
   return { days, hours, minutes, seconds };
 }
 
 function outputTimeLeft({ days, hours, minutes, seconds }) {
-  document.querySelector('span[data-days]').textContent = addLeadingZero(days);
-  document.querySelector('span[data-hours]').textContent = addLeadingZero(hours);
-  document.querySelector('span[data-minutes]').textContent = addLeadingZero(minutes);
-  document.querySelector('span[data-seconds]').textContent = addLeadingZero(seconds);
-}
-
-function addLeadingZero(value) {
-  //return value.padStart(2, '0');
-  return value < 10 ? '0' + value : value;
+  document.querySelector('span[data-days]').textContent = days;
+  document.querySelector('span[data-hours]').textContent = hours;
+  document.querySelector('span[data-minutes]').textContent = minutes;
+  document.querySelector('span[data-seconds]').textContent = seconds;
 }
